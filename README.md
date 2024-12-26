@@ -296,3 +296,69 @@ public class UserRating {
     }
 }
 ```
+El resultado: 
+```java
+@RestController
+@RequestMapping("/catalog")
+public class MovieCatalogController {
+
+    private final RestTemplate restTemplate;
+    private final WebClient.Builder webClientBuilder;
+
+    @Autowired
+    public MovieCatalogController(RestTemplate restTemplate, WebClient.Builder webClientBuilder) {
+        this.restTemplate = restTemplate;
+        this.webClientBuilder = webClientBuilder;
+    }
+
+    @RequestMapping("/{userId}")
+    public List<CatalogItem> getCatalog(@PathVariable("userId") String userId) {
+
+        UserRating ratings = restTemplate.getForObject("http://localhost:8082/ratingsdata/user/" + userId,
+                UserRating.class);
+
+        /*List<Rating> ratings = Arrays.asList(
+                new Rating("1234", 4),
+                new Rating("5678", 3)
+        );*/
+        return ratings
+                .getUserRatings()
+                .stream()
+                .map(rating -> {
+                   // For each movie ID, call movie info service and get details
+                    Movie movie = restTemplate.getForObject("http://localhost:8081/movies/" + rating.getMovieId(),
+                            Movie.class);
+                    // Put them all together
+                    return new CatalogItem(movie.getName(), "Desc", rating.getRating());
+
+                   /* Movie movie = webClientBuilder.build()
+                            .get()
+                            .uri("http://localhost:8081/movies/" + rating.getMovieId())
+                            .retrieve()
+                            .bodyToMono(Movie.class)
+                            .block();
+                    return new CatalogItem(movie.getName(), "Desc", rating.getRating());*/
+
+        }).toList();
+    }
+
+}
+```
+## ¿Qué tenemos hasta ahora?
+
+<img width="933" alt="image" src="https://github.com/user-attachments/assets/3441dc3b-9aee-4bbb-a9f7-9e381c8fe4ea" />
+
+🤦🏻‍♂️ Sin embargo, hay una cosa muy importante que estamos haciendo mal y es la práctica del **"hard-coding URLs"** o dicho de otro modo, escribir directamente las URLs en el código fuente de una aplicación, 
+en lugar de obtenerlas de una configuración externa o de variables de entorno. Esto puede dificultar el mantenimiento y la flexibilidad del código, ya 
+que cualquier cambio en las URLs requerirá modificar el código fuente y volver a desplegar la aplicación. En general tenemos estos problemas:
+
+* Los cambios requieren cambiar el código fuente
+  
+* Cuando despliegas algo en la nube, obtienes URLs dinámicas (no sabes la URL que vas a obtener)
+  
+* Balance de carga
+  
+* Múltiples entornos
+
+### ¿Cuál es la solución?
+Para solucionar este problema usaremos algo llamado **"Server discovery"**.
