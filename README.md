@@ -252,3 +252,47 @@ public class WebClientConfiguration {
      }
 }
 ```
+
+## Segundo paso: Recuperar la información de Ratings
+
+En nuestro RatingDataService lo que haremos será crear un endpoint donde devolveremos una lista de **Ratings**:
+```java
+
+@RestController
+@RequestMapping("/ratingsdata")
+public class RatingDataServiceController {
+    @RequestMapping("/{movieId}")
+    public Rating getRating(@PathVariable("movieId") String movieId) {
+        return new Rating(movieId, 4);
+    }
+
+    @RequestMapping("/user/{userId}")
+    public UserRating getUserRating(@PathVariable("userId") String userId) {
+        List<Rating> ratings = List.of(
+                new Rating("1234", 4),
+                new Rating("5678", 3)
+        );
+        UserRating userRating = new UserRating();
+        userRating.setUserRatings(ratings);
+        return userRating;
+    }
+}
+```
+
+👀 Observaciones: 
+Si te fijas, mi endpoint no devuelve una lista de ratings, si no un objeto UserRatings. ¿Por qué?, muy sencillo
+queremos evitar devolver una lista para asi no tener que parametizar los datos:
+
+```java
+public class UserRating {
+    private List<Rating> userRatings;
+
+    public List<Rating> getUserRatings() {
+        return userRatings;
+    }
+
+    public void setUserRatings(List<Rating> userRatings) {
+        this.userRatings = userRatings;
+    }
+}
+```
