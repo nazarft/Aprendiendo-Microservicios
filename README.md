@@ -99,4 +99,156 @@ Para ello crearemos los siguientes servicios:
 
 <img width="1420" alt="image" src="https://github.com/user-attachments/assets/cdaed95f-ab85-44d2-9a06-1a48bcf04d33" />
 
+## Primer paso
 
+En primer lugar, queremos obtener los detalles de las películas, así que empezaremos con que nuestro MovieCatalogService llame a MovieInfoService:
+
+Para ello, haremos uso de RestTemplate:
+
+```java
+@RestController
+@RequestMapping("/catalog")
+public class MovieCatalogController {
+
+    private final RestTemplate restTemplate;
+
+    @Autowired
+    public MovieCatalogController(RestTemplate restTemplate) {
+        this.restTemplate = restTemplate;
+    }
+
+    @RequestMapping("/{userId}")
+    public List<CatalogItem> getCatalog(@PathVariable("userId") String userId) {
+
+        List<Rating> ratings = Arrays.asList(
+                new Rating("1234", 4),
+                new Rating("5678", 3)
+        );
+        return ratings.stream().map(rating -> {
+            Movie movie = restTemplate.getForObject("http://localhost:8081/movies/" + rating.getMovieId(), Movie.class);
+            return new CatalogItem(movie.getName(), "Desc", rating.getRating());
+        }).toList();
+    }
+
+}
+```
+
+Si te fijas, también será necesario tener las clases Movie y Rating, asi que copiaremos y pegaremos tal cual los modelos que hemos creado en los otros dos servicios:
+
+<img width="243" alt="image" src="https://github.com/user-attachments/assets/00a68ce1-a9e4-436d-8faa-4ab919aa6f5f" />
+
+🧠 Consejo:
+
+Haremos uso de los @Bean de Spring para poder hacer uso de la misma instancia.
+
+```java
+@Configuration
+public class RestTemplateConfiguration {
+    @Bean
+    public RestTemplate restTemplate() {
+        return new RestTemplate();
+    }
+}
+```
+
+✅ ¿Por qué crear un Bean de RestTemplate?
+
+* Reutilización: Puedes reutilizar la misma instancia en diferentes partes de la aplicación.
+
+* Configuración personalizada: Puedes agregar interceptores, administradores de errores o configuraciones adicionales.
+
+* Inyección de dependencias: Facilita la inyección de la instancia usando @Autowired.
+
+👀 WebClient y el futuro de la programación reactiva
+
+Tanto RestTemplate como WebClient son herramientas para consumir APIs en aplicaciones Spring Boot, pero tienen diferencias clave en su diseño, uso y casos recomendados.
+
+✅ RestTemplate
+
+* Usa un modelo de programación bloqueante y sincrónico.
+  
+* Cada llamada bloquea el hilo hasta que obtiene una respuesta.
+  
+* Adecuado para aplicaciones más simples o con pocas llamadas HTTP.
+  
+* Está marcado como @Deprecated en las últimas versiones de Spring.
+  
+* Ideal para aplicaciones monolíticas o heredadas.
+
+✅ WebClient
+
+* Soporta programación reactiva y no bloqueante.
+
+* Permite manejar asincronía de forma eficiente.
+
+* Optimiza el uso de recursos y escala mejor en aplicaciones con alta concurrencia.
+
+* Compatible con Mono y Flux (paradigmas reactivos).
+
+* Es la opción recomendada por Spring para aplicaciones modernas.
+
+🧠 ¿Cuál elegir?
+🟢 Para nuevas aplicaciones:
+
+✅ Usa WebClient.
+
+🟡 Para aplicaciones existentes con RestTemplate:
+
+⚠️ No migres sin una necesidad clara.
+
+🔄 Puedes combinar ambos en un proceso de transición gradual.
+
+🔵 Para aplicaciones altamente concurrentes o reactivo por naturaleza:
+
+✅ WebClient es la opción indiscutible.
+
+### Código con WebClient
+
+```java
+
+@RestController
+@RequestMapping("/catalog")
+public class MovieCatalogController {
+
+    private final WebClient.Builder webClientBuilder;
+
+    @Autowired
+    public MovieCatalogController( WebClient.Builder webClientBuilder) {
+        this.webClientBuilder = webClientBuilder;
+    }
+
+    @RequestMapping("/{userId}")
+    public List<CatalogItem> getCatalog(@PathVariable("userId") String userId) {
+
+        List<Rating> ratings = Arrays.asList(
+                new Rating("1234", 4),
+                new Rating("5678", 3)
+        );
+        return ratings.stream().map(rating -> {
+            /*Movie movie = restTemplate.getForObject("http://localhost:8081/movies/" + rating.getMovieId(), Movie.class);
+            return new CatalogItem(movie.getName(), "Desc", rating.getRating());*/
+            Movie movie = webClientBuilder.build()
+                    .get()
+                    .uri("http://localhost:8081/movies/" + rating.getMovieId())
+                    .retrieve()
+                    .bodyToMono(Movie.class)
+                    .block();
+            return new CatalogItem(movie.getName(), "Desc", rating.getRating());
+        }).toList();
+    }
+
+}
+```
+
+Y la configuracion sería:
+
+```java
+
+@Configuration
+public class WebClientConfiguration {
+     @Bean
+     public WebClient.Builder getWebClientBuilder() {
+        return WebClient.builder();
+     }
+}
+```
