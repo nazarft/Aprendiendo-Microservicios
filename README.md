@@ -1,4 +1,11 @@
 # Aprendiendo-Microservicios
+
+## Antes de empezar
+
+*La finalidad de este repositorio es entender como funcionan los microservicios. El código intenta ser lo más simple posible y evitar usar conceptos que no son necesarios para entender el funcionamiento
+de los microservicios. He intentado evitar el uso de Lombok,Jpa,BBDDs, etc y centrarme únicamente en lo importante.*
+
+## Introducción
 Cuando diseñamos una aplicación, se nos viene a la mente dos enfoques principales: **Monolítica y Microservicios**.
 
 # Arquitectura monolítica
@@ -439,4 +446,95 @@ eureka.client.registerWithEureka=false
 eureka.client.fetchRegistry=false
 server.port=8761
 ```
+## Convertir nuestros servicios en clientes 
+
+Tenemos que convertir tanto MovieInfoService, como RatingInfoService y MovieCatalogService en **clientes**:
+
+```java
+<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
+</dependency>
+```
+Y si ejecutamos por ejemplo MovieInfoService, podemos ver en nuestra pagina de Eureka-Server lo siguiente:
+<img width="1680" alt="image" src="https://github.com/user-attachments/assets/a23733e7-f07d-4dba-bc10-3ff363cdc70a" />
+
+### ¿Cómo consumimos nuestros servicios?
+
+Nuestra "aplicación central", es decir, MovieCatalog, necesita consumir los otros servicios de forma dinámica. Para ello:
+```java
+@Configuration
+public class RestTemplateConfiguration {
+    @LoadBalanced
+    @Bean
+    public RestTemplate restTemplate() {
+        return new RestTemplate();
+    }
+}
+```
+En nuestro caso, como tenemos una configuración específica del LoadTemplate ( si usamos WebClient también usaremos la misma anotación @LoadBalanced.
+
+### ¿Qué hace @LoadBalanced?
+La anotación @LoadBalanced le indica a Spring que el RestTemplate debe tener habilitado el balanceo de carga de las instancias de servicio registradas en Eureka o cualquier otro registro de servicios que estés utilizando.
+
+Esto permite que, cuando tu aplicación haga una solicitud a otro servicio (por ejemplo, a través de RestTemplate), Spring Cloud se encargue de redirigir la solicitud a una de las instancias del servicio disponible en lugar de realizar una solicitud directa a una URL estática.
+
+**Ejemplo**: *Si tienes un servicio llamado movie-catalog-service registrado en Eureka, en lugar de hacer una solicitud directa a http://localhost:8080/movies, podrías hacer una solicitud como http://movie-catalog-service/movies (sin especificar el puerto ni la IP). Spring Cloud se encargará de resolver la URL y dirigir la solicitud a una de las instancias disponibles, incluso si hay múltiples instancias de movie-catalog-service funcionando en diferentes puertos o máquinas.*
+
+Nuestro controlador de MovieCatalog quedaría así:
+
+```java
+@RestController
+@RequestMapping("/catalog")
+public class MovieCatalogController {
+
+    private final RestTemplate restTemplate;
+    private final WebClient.Builder webClientBuilder;
+
+    @Autowired
+    public MovieCatalogController(RestTemplate restTemplate, WebClient.Builder webClientBuilder) {
+        this.restTemplate = restTemplate;
+        this.webClientBuilder = webClientBuilder;
+    }
+
+    @RequestMapping("/{userId}")
+    public List<CatalogItem> getCatalog(@PathVariable("userId") String userId) {
+
+        UserRating ratings = restTemplate.getForObject("http://ratings-data-service/ratingsdata/user/" + userId,
+                UserRating.class);
+
+        /*List<Rating> ratings = Arrays.asList(
+                new Rating("1234", 4),
+                new Rating("5678", 3)
+        );*/
+        return ratings
+                .getUserRatings()
+                .stream()
+                .map(rating -> {
+                   // For each movie ID, call movie info service and get details
+                    Movie movie = restTemplate.getForObject("http://movie-info-service/movies/" + rating.getMovieId(),
+                            Movie.class);
+                    // Put them all together
+                    return new CatalogItem(movie.getName(), "Desc", rating.getRating());
+
+                   /* Movie movie = webClientBuilder.build()
+                            .get()
+                            .uri("http://localhost:8081/movies/" + rating.getMovieId())
+                            .retrieve()
+                            .bodyToMono(Movie.class)
+                            .block();
+                    return new CatalogItem(movie.getName(), "Desc", rating.getRating());*/
+
+        }).toList();
+    }
+}
+```
+Fíjate!!. Ya no hacemos llamadas a URLs estáticas si no que este enfoque facilita la escalabilidad y el balanceo de carga sin necesidad de gestionar direcciones de IP o puertos manualmente.
+
+<img width="1329" alt="image" src="https://github.com/user-attachments/assets/c4837d3d-852c-4631-b483-d161337d76ea" />
+
+**¿Cómo gestiona Spring Cloud el balanceo de carga?:**
+Cuando tienes varias instancias de un servicio (en este caso, movie-info-service), y haces una llamada usando un RestTemplate con @LoadBalanced, Spring Cloud, 
+a través de un cliente de balanceo de carga como *Ribbon* (integrado en Spring Cloud), selecciona dinámicamente una instancia disponible para realizar la solicitud. Esto ocurre en segundo plano ¡sin que el desarrollador tenga que preocuparse por cómo se distribuyen las solicitudes entre las instancias!.
+
 
