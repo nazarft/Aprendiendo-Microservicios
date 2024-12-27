@@ -537,4 +537,78 @@ Fíjate!!. Ya no hacemos llamadas a URLs estáticas si no que este enfoque facil
 Cuando tienes varias instancias de un servicio (en este caso, movie-info-service), y haces una llamada usando un RestTemplate con @LoadBalanced, Spring Cloud, 
 a través de un cliente de balanceo de carga como *Ribbon* (integrado en Spring Cloud), selecciona dinámicamente una instancia disponible para realizar la solicitud. Esto ocurre en segundo plano ¡sin que el desarrollador tenga que preocuparse por cómo se distribuyen las solicitudes entre las instancias!.
 
+## Flujo de nuestro proyecto por ahora
+
+Tenemos tres servicios principales:
+
+**1. Movie Catalog Service (/catalog)**
+   
+**2. Ratings Data Service (/ratingsdata)**
+   
+**3.Movie Info Service (/movies)**
+
+### Flujo de llamadas entre microservicios:
+
+1. El usuario llama al servicio Movie Catalog Service:
+
+* Aquí, el usuario solicita un catálogo de películas para un ID de usuario específico.
+  
+* El MovieCatalogController obtiene las calificaciones de las películas para ese usuario llamando al Ratings Data Service.
+  
+2. Movie Catalog Service llama a Ratings Data Service:
+
+* Se obtiene una lista de películas y sus calificaciones para el usuario dado.
+  
+* El RatingDataServiceController devuelve una lista de calificaciones.
+
+```
+{
+  "userRatings": [
+    { "movieId": "MOV101", "rating": 5 },
+    { "movieId": "MOV102", "rating": 4 }
+  ]
+}
+```
+
+3. Movie Catalog Service llama a Movie Info Service:
+
+Por cada movieId en la lista anterior, se hace una llamada al servicio de información de películas:
+
+El MovieController devuelve la información de cada película.
+```
+{
+  "movieId": "MOV101",
+  "name": "El Señor de los Anillos",
+  "descrption": "Un anillo para gobernarlos a todos"
+}
+```
+
+4. Movie Catalog Service construye la respuesta final:
+
+Con las calificaciones del Ratings Data Service y los detalles del Movie Info Service, el catálogo final se compone.
+
+```
+[
+  {
+    "name": "El Señor de los Anillos",
+    "description": "Desc",
+    "rating": 5
+  },
+  {
+    "name": "Interestelar",
+    "description": "Desc",
+    "rating": 4
+  }
+]
+```
+
+**🔑 Puntos clave para entender el flujo**
+
+1.Movie Catalog Service es el intermediario principal: Llama a los otros dos servicios (Ratings Data y Movie Info) para obtener los datos necesarios.
+
+2.Ratings Data Service: Proporciona una lista de calificaciones para un usuario.
+
+3.Movie Info Service: Proporciona detalles para cada movieId.
+
+
 
