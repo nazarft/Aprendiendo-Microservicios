@@ -354,10 +354,6 @@ public class MovieCatalogController {
         UserRating ratings = restTemplate.getForObject("http://localhost:8082/ratingsdata/user/" + userId,
                 UserRating.class);
 
-        /*List<Rating> ratings = Arrays.asList(
-                new Rating("1234", 4),
-                new Rating("5678", 3)
-        );*/
         return ratings
                 .getUserRatings()
                 .stream()
