@@ -296,6 +296,36 @@ public class UserRating {
     }
 }
 ```
+📝 Escenario con Rating sin UserRating:
+
+Si decides añadir datos del usuario (userId, userName) directamente en cada objeto Rating, tendrás que repetirlos en cada instancia.
+
+```java
+
+public class Rating {
+    private String movieId;
+    private int rating;
+    private String userId;
+    private String userName;
+}
+
+```
+
+```
+[
+    { "movieId": "1234", "rating": 4, "userId": "u123", "userName": "Juan Pérez" },
+    { "movieId": "5678", "rating": 3, "userId": "u123", "userName": "Juan Pérez" }
+]
+```
+🚨 Problema:
+
+userId y userName están repetidos en cada calificación.
+
+Si el usuario tiene 100 calificaciones, ¡estás repitiendo la misma información 100 veces!
+
+Esto no es eficiente ni escalable. Además, si el nombre del usuario cambia, tendrás que actualizar las 100 instancias.
+
+
 El resultado: 
 ```java
 @RestController
@@ -362,3 +392,51 @@ que cualquier cambio en las URLs requerirá modificar el código fuente y volver
 
 ### ¿Cuál es la solución?
 Para solucionar este problema usaremos algo llamado **"Server discovery"**.
+
+<img width="1149" alt="image" src="https://github.com/user-attachments/assets/d35ee22c-a07c-4c10-b849-855b66e8bc0e" />
+
+Esto es lo que llamamos Server discovery del lado **cliente**.
+
+## Netflix Eureka Server
+
+Netflix Eureka es un servicio de descubrimiento (Service Discovery) de aplicaciones diseñado para entornos de microservicios. Forma parte del conjunto de herramientas de Netflix OSS (Open Source Software) y es ampliamente utilizado en arquitecturas distribuidas para simplificar la comunicación entre microservicios.
+
+📚 **¿Por qué es necesario un servicio de descubrimiento?**
+
+En una arquitectura de microservicios, las aplicaciones están divididas en múltiples servicios pequeños e independientes que se comunican entre sí a través de la red.
+
+🛑 Problema sin Eureka:
+
+Direcciones IP dinámicas: Los servicios suelen desplegarse en contenedores o máquinas virtuales con direcciones IP que pueden cambiar dinámicamente.
+
+Escalabilidad: A medida que se añaden o eliminan instancias de servicios, la lista de direcciones IP cambia constantemente.
+
+Complejidad: Los servicios necesitan saber dónde y cómo encontrar otros servicios.
+
+✅ Solución con Eureka:
+
+Registro de Servicios: Cada microservicio se registra en el Eureka Server cuando se inicia.
+
+Descubrimiento de Servicios: Los microservicios pueden consultar a Eureka para obtener la dirección y el puerto de otros servicios.
+
+Load Balancing: Eureka se integra con herramientas como Ribbon para distribuir las solicitudes entre múltiples instancias de un servicio.
+
+**🖥️ Ejemplo básico de Eureka Server en Spring Boot**
+
+```java
+@SpringBootApplication
+@EnableEurekaServer
+public class EurekaServerApplication {
+    public static void main(String[] args) {
+        SpringApplication.run(EurekaServerApplication.class, args);
+    }
+}
+```
+Es importante tambien añadir en el application properties:
+
+```
+eureka.client.registerWithEureka=false
+eureka.client.fetchRegistry=false
+server.port=8761
+```
+
