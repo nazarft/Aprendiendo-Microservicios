@@ -34,10 +34,6 @@ public class MovieCatalogController {
         UserRating ratings = restTemplate.getForObject("http://ratings-data-service/ratingsdata/user/" + userId,
                 UserRating.class);
 
-        /*List<Rating> ratings = Arrays.asList(
-                new Rating("1234", 4),
-                new Rating("5678", 3)
-        );*/
         return ratings
                 .getUserRatings()
                 .stream()
@@ -46,7 +42,11 @@ public class MovieCatalogController {
                     Movie movie = restTemplate.getForObject("http://movie-info-service/movies/" + rating.getMovieId(),
                             Movie.class);
                     // Put them all together
-                    return new CatalogItem(movie.getName(), "Desc", rating.getRating());
+                    return new CatalogItem(
+                            movie.getName(),
+                            movie.getDescription(),
+                            rating.getRating()
+                    );
 
                    /* Movie movie = webClientBuilder.build()
                             .get()
