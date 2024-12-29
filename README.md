@@ -606,5 +606,40 @@ Con las calificaciones del Ratings Data Service y los detalles del Movie Info Se
 
 3.Movie Info Service: Proporciona detalles para cada movieId.
 
+## Tolerancia a fallos y resilencia
 
+La tolerancia a fallos es la capacidad que tiene nuestra aplicación de "sobrevivir" o "soportar" un fallo.
+
+La resilencia es como nuestra aplicación puede adaptarse a los fallos para poder seguir funcionando.
+
+**¿Cómo haces nuestra aplicación mas resiliente?**
+
+Imagíate un escenario en el que nuestro servicio de RatingsDataService se cae:
+
+<img width="941" alt="image" src="https://github.com/user-attachments/assets/30f83b90-ff27-4b91-a4e4-c3afb30be43a" />
+
+👀 **¿La solución?:** Crea varias instancias del mismo servicio!
+
+<img width="941" alt="image" src="https://github.com/user-attachments/assets/5caac7e3-a4bc-484e-a00a-765242bf3582" />
+
+## Más problemas: lentitud en los servicios
+
+Que un servicio vaya lento puede ser un quebradero de cabeza incluso mayor al que un servicio se caiga. Si un servicio va lento, nuestra aplicación puede verse ralentizada en otros ámbitos. 
+Pongamos este ejemplo:
+<img width="1309" alt="image" src="https://github.com/user-attachments/assets/f78c8cb0-6137-4923-888a-0bf21972a188" />
+Imagina que ahora nuestro servicio que trae la información de las películas hace una llamada a una base de datos (que es como se haría en realidad pero en nuestra aplicación no se ha hecho
+para buscar sencillez). Si hay problemas que hace que se vuelva lento la obtención de información. Pero, ¿por qué?.
+
+Aquí entra en concepto los "hilos" (se explica en el siguiente apartado):
+* Si un servicio externo es lento, puede generar muchos hilos bloqueados (threads que están esperando una respuesta) en tu sistema. Estos hilos siguen consumiendo recursos del sistema mientras esperan que el servicio externo responda.
+Cuando intentas llamar a un servicio interno, este también necesitará recursos del sistema (como hilos disponibles) para procesar la solicitud. Sin embargo, si la mayoría de los recursos están ocupados esperando respuestas de ese servicio externo lento, el servicio interno no tendrá suficientes recursos para funcionar de manera eficiente.
+Como resultado, todo el sistema se vuelve más lento, ya que los recursos están saturados con solicitudes pendientes que aún no han sido completadas.
+En resumen: un servicio externo lento puede crear un efecto dominó que afecta negativamente a otros servicios en tu sistema, ralentizando su desempeño general.
+
+### ¿Cómo funcionan los hilos?
+
+De normal, el flujo correcto sería el siguiente:
+<img width="1309" alt="image" src="https://github.com/user-attachments/assets/b43b348c-8daf-4804-8c40-7b6a3d77a095" />
+**Pero no siempre se dan situacione idóneas y hay veces que el flujo no es así!**:
+<img width="1218" alt="image" src="https://github.com/user-attachments/assets/a59f5a39-39b5-4154-942d-41d23c07319b" />
 
