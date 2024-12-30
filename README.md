@@ -643,3 +643,34 @@ De normal, el flujo correcto sería el siguiente:
 **Pero no siempre se dan situacione idóneas y hay veces que el flujo no es así!**:
 <img width="1218" alt="image" src="https://github.com/user-attachments/assets/a59f5a39-39b5-4154-942d-41d23c07319b" />
 
+**¿La solución?**: crear *"timeouts"*
+
+## Circuit breaker
+
+Para solucionar los problemas que encontramos con servicios lentos entra lo que denominamos como **"circuit breaker"**.
+Un Circuit Breaker (Interruptor de Circuito) es un patrón de diseño utilizado en arquitecturas de microservicios para evitar fallos en cascada cuando un servicio dependiente falla o está sobrecargado. Su principal objetivo es detectar fallos rápidamente y evitar que el sistema se degrade aún más al seguir intentando operaciones que probablemente fallarán.
+
+### ¿Cuándo se dispara el circuito?
+
+Para lanzarlo es fundamental tener en cuenta los siguientes matices:
+
+* Últimas n peticiones para ser considerado como decisión
+
+* ¿Cuántas de esas deben fallar?
+
+* Duración del "timeout"
+
+### ¿Cuándo se resetea el circuito?
+
+* ¿Cuánto tiempo esperamos desde que se disparó el circuito por última vez?
+
+### Ejemplo
+
+Para poder ver estas explicaciones es mejor verlo en un dibujo:
+
+<img width="1218" alt="image" src="https://github.com/user-attachments/assets/fb35ffc2-39c4-4869-80b5-87fb7aa47a13" />
+
+Poniendo de ejemplo las condiciones del dibujo, podemos visualizar una idea de como se ejecutaría un **circuit  breaker**, lógicamente esto en producción no sería así y averiguar las variables exactas es mucho más complicado.
+
+
+
