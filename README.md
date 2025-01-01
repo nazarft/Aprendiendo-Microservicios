@@ -672,5 +672,44 @@ Para poder ver estas explicaciones es mejor verlo en un dibujo:
 
 Poniendo de ejemplo las condiciones del dibujo, podemos visualizar una idea de como se ejecutaría un **circuit  breaker**, lógicamente esto en producción no sería así y averiguar las variables exactas es mucho más complicado.
 
+### Ejemplo
+
+*Una vez entendido esto, imaginemos que nuestro MovieInfoService va lento, ¿qué haríamos?*
+
+Necesitamos **retroceder**. Para ellos podemos tener varias opciones:
+
+1. Lanzar un error: no es la más aconsejable
+
+2. Devolver una repuesta predeterminada
+
+3. Guardar respuestas anterior en caché y utilizarlas: esta es la mejor opción!
+
+### 🤔 Curiosidades
+
+**¿Cómo averiguamos el número de hilos de nuestro servidor web?**
+
+Antes de implementar un circuit breaker seguro que puedes pensar, ¿cómo podemos saber el número de hilos de los que dispone nuestro servidor?
+
+Si trabajamos con SpringBoot, de normal es montar un servidor Tomcat, así que podemos acceder al archivo **server.xml**:
+
+```xml
+<Connector port="8080" protocol="HTTP/1.1"
+           connectionTimeout="20000"
+           redirectPort="8443"
+           maxThreads="200"
+           minSpareThreads="10"/>
+```
+
+**¿Cómo podemos saber los valores que tenemos que usar para nuestro circuit breaker?**
+
+En muchas páginas, libros, teoría dan muchas explicaciones de como poder obtener los valores para poder crear el circuito.
+
+¿La verdad?. La verdad es que los parámetros se consiguen a base de prueba y error, ver como tu aplicación reacciona a un número concreto de valores y modificiarlos
+en caso de que no tenga el rendimiento esperado.
+
+## Implementación del circuit breaker: Hystrix
+
+Hystrix es una biblioteca de resiliencia y tolerancia a fallos desarrollada por Netflix para aplicaciones distribuidas. Su principal objetivo es mejorar la estabilidad y disponibilidad de los sistemas distribuidos, evitando fallos en cascada cuando ocurren problemas en algún servicio dependiente.
+
 
 
