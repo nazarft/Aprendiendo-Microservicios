@@ -11,7 +11,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/movies")
 public class MovieController {
-    // Base de datos simulada
+    
     private final Map<String, Movie> movieData = new HashMap<>();
     public MovieController() {
         movieData.put("MOV101", new Movie("MOV101", "El Señor de los Anillos", "Un anillo para gobernarlos a todos"));
@@ -21,7 +21,6 @@ public class MovieController {
     }
     @RequestMapping("/{movieId}")
     public Movie getMovieInfo(@PathVariable("movieId") String movieId) {
-        // Devuelve una película específica o una por defecto si no existe
         return movieData.getOrDefault(movieId, new Movie(movieId, "Película desconocida", "Sin descripción"));
     }
 }

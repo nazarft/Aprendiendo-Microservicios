@@ -12,6 +12,9 @@ public class CatalogItem {
         this.rating = rating;
     }
 
+    public CatalogItem() {
+    }
+
     public String getName() {
         return name;
     }

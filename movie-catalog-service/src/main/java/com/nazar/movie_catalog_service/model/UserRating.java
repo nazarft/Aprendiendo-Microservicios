@@ -3,13 +3,21 @@ package com.nazar.movie_catalog_service.model;
 import java.util.List;
 
 public class UserRating {
-    private List<Rating> userRatings;
+    private List<Rating> ratings;
 
-    public List<Rating> getUserRatings() {
-        return userRatings;
+    public UserRating() {
     }
 
-    public void setUserRatings(List<Rating> userRatings) {
-        this.userRatings = userRatings;
+    public UserRating(List<Rating> ratings) {
+        this.ratings = ratings;
+    }
+
+    public List<Rating> getRatings() {
+        return ratings;
+    }
+
+    public void setRatings(List<Rating> ratings) {
+        this.ratings = ratings;
     }
 }
+
