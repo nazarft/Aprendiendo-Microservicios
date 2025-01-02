@@ -707,9 +707,89 @@ En muchas páginas, libros, teoría dan muchas explicaciones de como poder obten
 ¿La verdad?. La verdad es que los parámetros se consiguen a base de prueba y error, ver como tu aplicación reacciona a un número concreto de valores y modificiarlos
 en caso de que no tenga el rendimiento esperado.
 
-## Implementación del circuit breaker: Hystrix
+## Implementación del circuit breaker: Resilience4j
 
-Hystrix es una biblioteca de resiliencia y tolerancia a fallos desarrollada por Netflix para aplicaciones distribuidas. Su principal objetivo es mejorar la estabilidad y disponibilidad de los sistemas distribuidos, evitando fallos en cascada cuando ocurren problemas en algún servicio dependiente.
+Reilience4j es una biblioteca de Java diseñada para implementar patrones de resiliencia en aplicaciones distribuidas o microservicios. Está inspirada en Hystrix, pero a diferencia de Hystrix, está construida específicamente para Java 8 y versiones posteriores, aprovechando sus características modernas como Lambdas y CompletableFuture.
 
+Tenemos muchas opciones que nos aporta Resilience4j, pero en nuestro caso haremos uso en concreto de la herramienta **Circuit breaker**.
 
+En primer lugar pondremos la dependencia:
+
+```java
+<dependency>
+    <groupId>org.springframework.cloud</groupId>
+    <artifactId>spring-cloud-starter-circuitbreaker-reactor-resilience4j</artifactId>
+</dependency>
+```
+
+Lo segundo, indicar donde queremos que tenga lugar el circuit breaker:
+
+```java
+ @RequestMapping("/{userId}")
+    @CircuitBreaker(name = "movie-catalog-service", fallbackMethod = "fallbackCatalog")
+    public List<CatalogItem> getCatalog(@PathVariable("userId") String userId) throws Exception {
+            UserRating userRatings = restTemplate.getForObject("http://ratings-data-service/ratingsdata/user/" + userId, UserRating.class);
+            return userRatings.getRatings().stream()
+                    .map(rating -> {
+                        Movie movie = restTemplate.getForObject("http://movie-info-service/movies/" + rating.getMovieId(), Movie.class);
+                        return new CatalogItem(
+                                movie.getName(),
+                                movie.getDescription(),
+                                rating.getRating()
+                        );
+                    }).toList();
+    }
+```
+
+En "name" indicamos el nombre del circuit breaker, y en el "fallbackMethod" indicamos el nombre del método que actuará en el caso de que falle la llamada en este caso a "MovieInfoService":
+
+```java
+private List<CatalogItem> fallbackCatalog(Exception e) {
+        return List.of(new CatalogItem("Película no disponible", "", 0));
+    }
+```
+
+Y luego en nuestro application.properties o en nuestro application.yml indicamos como parametros lo siguiente:
+```java
+spring:
+  application:
+    name: movie-catalog-service
+resilience4j:
+circuitbreaker:
+  instances:
+    movie-catalog-service:
+      slidingWindowSize: 10
+      slidingWindowType: COUNT_BASED
+      minimumNumberOfCalls: 5
+      permittedNumberOfCallsInHalfOpenState: 10
+      failureRateThreshold: 50
+server:
+  port: 8081
+```
+* slidingWindowSize:
+
+Define el tamaño de la ventana deslizante para medir el rendimiento del Circuit Breaker.
+10: Se tendrán en cuenta las últimas 10 llamadas al servicio.
+
+* slidingWindowType:
+
+Define el tipo de ventana:
+COUNT_BASED: Se basa en un número fijo de llamadas (en este caso, 10).
+TIME_BASED: Se basa en un período de tiempo fijo.
+
+* minimumNumberOfCalls:
+
+Número mínimo de llamadas necesarias para que el Circuit Breaker empiece a evaluar el estado.
+5: Hasta que no haya al menos 5 llamadas, el estado no se evaluará.
+
+* permittedNumberOfCallsInHalfOpenState:
+
+Número de llamadas permitidas cuando el Circuit Breaker está en estado "Half-Open" (medio abierto).
+10: Se permitirán hasta 10 llamadas antes de decidir si el Circuit Breaker vuelve a estar "Closed" (cerrado) o se mantiene "Open" (abierto).
+
+* failureRateThreshold:
+
+Umbral de tasa de fallos para abrir el Circuit Breaker.
+50: Si el 50% de las llamadas fallan, el Circuit Breaker cambiará a estado "Open".
+eventConsumerBufferSize:
 
