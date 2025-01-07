@@ -730,6 +730,9 @@ eventConsumerBufferSize:
 
 # Fuentes
 https://resilience4j.readme.io/docs/getting-started
+
 https://samnewman.io/books/building_microservices/
+
 https://www.youtube.com/c/amigoscode
+
 https://www.arquitecturajava.com/spring-cloud-eureka-server-y-discovery/
