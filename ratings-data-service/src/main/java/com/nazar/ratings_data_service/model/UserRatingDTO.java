@@ -2,10 +2,10 @@ package com.nazar.ratings_data_service.model;
 
 import java.util.List;
 
-public class UserRating {
+public class UserRatingDTO {
     private List<Rating> ratings;
 
-    public UserRating() {
+    public UserRatingDTO() {
     }
 
     public List<Rating> getRatings() {
