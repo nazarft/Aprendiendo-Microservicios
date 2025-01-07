@@ -18,33 +18,13 @@ Una arquitectura monolítica es aquella en la que toda la aplicación está cons
 * Base de datos centralizada: Una única base de datos para toda la aplicación.
 * Despliegue conjunto: Si hay un cambio en una parte de la aplicación, es necesario desplegar todo el sistema nuevamente.
 
-✅ Ventajas:
+| **Ventajas** | **Desventajas** | **Casos de Uso Ideales** |
+|--------------|-----------------|--------------------------|
+| ✔️ Más fácil de desarrollar, probar y depurar al inicio. | ❌ Escalabilidad limitada: no puedes escalar partes individuales del sistema. | Proyectos pequeños o medianos. |
+| ✔️ Despliegue sencillo: todo en un solo lugar. | ❌ Difícil de mantener a medida que crece el código. | Equipos pequeños de desarrollo. |
+| ✔️ Rendimiento eficiente al evitar llamadas a través de la red. | ❌ Una falla puede tumbar toda la aplicación. | Aplicaciones con requisitos estables y pocos cambios. |
+| ✔️ Menor sobrecarga operativa (menos servicios que administrar). | ❌ Tiempo de despliegue más largo conforme aumenta la complejidad. |  |
 
-✔️ Más fácil de desarrollar, probar y depurar al inicio.
-
-✔️ Despliegue sencillo: todo en un solo lugar.
-
-✔️ Rendimiento eficiente al evitar llamadas a través de la red.
-
-✔️ Menor sobrecarga operativa (menos servicios que administrar).
-
-❌ Desventajas:
-
-❌ Escalabilidad limitada: no puedes escalar partes individuales del sistema.
-
-❌ Difícil de mantener a medida que crece el código.
-
-❌ Una falla puede tumbar toda la aplicación.
-
-❌ Tiempo de despliegue más largo conforme aumenta la complejidad.
-
-🛠️ Casos de Uso Ideales:
-
-Proyectos pequeños o medianos.
-
-Equipos pequeños de desarrollo.
-
-Aplicaciones con requisitos estables y pocos cambios.
 
 # Arquitectura de microservicios
 
@@ -60,35 +40,13 @@ Escalabilidad independiente: Puedes escalar solo los servicios que lo necesiten.
 
 Despliegue independiente: Cada servicio se puede actualizar sin afectar a los demás.
 
-✅ Ventajas:
+| **Ventajas** | **Desventajas** | **Casos de Uso Ideales** |
+|--------------|-----------------|--------------------------|
+| ✔️ Escalabilidad independiente para cada servicio. | ❌ Mayor complejidad operativa y de implementación. | Aplicaciones grandes y complejas. |
+| ✔️ Mayor flexibilidad tecnológica (diferentes lenguajes y bases de datos). | ❌ Problemas de latencia en la comunicación entre servicios. | Equipos de desarrollo distribuidos. |
+| ✔️ Mejor tolerancia a fallos: si un servicio falla, no colapsa todo el sistema. | ❌ Más difícil de depurar y hacer seguimiento de errores. | Necesidad de escalabilidad frecuente. |
+| ✔️ Equipos independientes pueden trabajar en diferentes servicios simultáneamente. | ❌ Sobrecarga en el despliegue y gestión de múltiples servicios. | Entornos con requisitos cambiantes. |
 
-✔️ Escalabilidad independiente para cada servicio.
-
-✔️ Mayor flexibilidad tecnológica (diferentes lenguajes y bases de datos).
-
-✔️ Mejor tolerancia a fallos: si un servicio falla, no colapsa todo el sistema.
-
-✔️ Equipos independientes pueden trabajar en diferentes servicios simultáneamente.
-
-❌ Desventajas:
-
-❌ Mayor complejidad operativa y de implementación.
-
-❌ Problemas de latencia en la comunicación entre servicios.
-
-❌ Más difícil de depurar y hacer seguimiento de errores.
-
-❌ Sobrecarga en el despliegue y gestión de múltiples servicios.
-
-🛠️ Casos de Uso Ideales:
-
-Aplicaciones grandes y complejas.
-
-Equipos de desarrollo distribuidos.
-
-Necesidad de escalabilidad frecuente.
-
-Entornos con requisitos cambiantes.
 
 <img width="1191" alt="image" src="https://github.com/user-attachments/assets/59604fe0-bc89-47a2-80c9-829f20a23f4f" />
 
@@ -166,48 +124,25 @@ public class RestTemplateConfiguration {
 
 * Inyección de dependencias: Facilita la inyección de la instancia usando @Autowired.
 
-👀 **WebClient y el futuro de la programación reactiva**
+### WebClient y el futuro de la programación reactiva
 
 Tanto RestTemplate como WebClient son herramientas para consumir APIs en aplicaciones Spring Boot, pero tienen diferencias clave en su diseño, uso y casos recomendados.
 
-✅ RestTemplate
+| **RestTemplate** | **WebClient** |
+|------------------|---------------|
+| ✅ Usa un modelo de programación bloqueante y sincrónico. | ✅ Soporta programación reactiva y no bloqueante. |
+| ✅ Cada llamada bloquea el hilo hasta que obtiene una respuesta. | ✅ Permite manejar asincronía de forma eficiente. |
+| ✅ Adecuado para aplicaciones más simples o con pocas llamadas HTTP. | ✅ Optimiza el uso de recursos y escala mejor en aplicaciones con alta concurrencia. |
+| ✅ Está marcado como @Deprecated en las últimas versiones de Spring. | ✅ Compatible con Mono y Flux (paradigmas reactivos). |
+| ✅ Ideal para aplicaciones monolíticas o heredadas. | ✅ Es la opción recomendada por Spring para aplicaciones modernas. |
 
-* Usa un modelo de programación bloqueante y sincrónico.
-  
-* Cada llamada bloquea el hilo hasta que obtiene una respuesta.
-  
-* Adecuado para aplicaciones más simples o con pocas llamadas HTTP.
-  
-* Está marcado como @Deprecated en las últimas versiones de Spring.
-  
-* Ideal para aplicaciones monolíticas o heredadas.
-
-✅ WebClient
-
-* Soporta programación reactiva y no bloqueante.
-
-* Permite manejar asincronía de forma eficiente.
-
-* Optimiza el uso de recursos y escala mejor en aplicaciones con alta concurrencia.
-
-* Compatible con Mono y Flux (paradigmas reactivos).
-
-* Es la opción recomendada por Spring para aplicaciones modernas.
-
-🧠 ¿Cuál elegir?
-🟢 Para nuevas aplicaciones:
-
-✅ Usa WebClient.
-
-🟡 Para aplicaciones existentes con RestTemplate:
-
-⚠️ No migres sin una necesidad clara.
-
-🔄 Puedes combinar ambos en un proceso de transición gradual.
-
-🔵 Para aplicaciones altamente concurrentes o reactivo por naturaleza:
-
-✅ WebClient es la opción indiscutible.
+### 🧠 ¿Cuál elegir?
+| **Tipo de Aplicación** | **Recomendación** |
+|------------------------|-------------------|
+| 🟢 Para nuevas aplicaciones: | ✅ Usa WebClient. |
+| 🟡 Para aplicaciones existentes con RestTemplate: | ⚠️ No migres sin una necesidad clara. |
+|                        | 🔄 Puedes combinar ambos en un proceso de transición gradual. |
+| 🔵 Para aplicaciones altamente concurrentes o reactivo por naturaleza: | ✅ WebClient es la opción indiscutible. |
 
 ### Código con WebClient
 
@@ -286,8 +221,8 @@ public class RatingDataServiceController {
 }
 ```
 
-👀 Observaciones: 
-Si te fijas, mi endpoint no devuelve una lista de ratings, si no un objeto UserRatings. ¿Por qué?, muy sencillo
+### 👀 Observaciones: 
+Si te fijas, mi endpoint no devuelve una lista de ratings, si no un objeto **UserRatings**. ¿Por qué?, muy sencillo
 queremos evitar devolver una lista para asi no tener que parametizar los datos:
 
 ```java
@@ -324,9 +259,9 @@ public class Rating {
     { "movieId": "5678", "rating": 3, "userId": "u123", "userName": "Juan Pérez" }
 ]
 ```
-🚨 Problema:
+### 🚨 Problema:
 
-userId y userName están repetidos en cada calificación.
+**userId y userName están repetidos en cada calificación.**
 
 Si el usuario tiene 100 calificaciones, ¡estás repitiendo la misma información 100 veces!
 
@@ -410,19 +345,19 @@ En una arquitectura de microservicios, las aplicaciones están divididas en múl
 
 🛑 Problema sin Eureka:
 
-Direcciones IP dinámicas: Los servicios suelen desplegarse en contenedores o máquinas virtuales con direcciones IP que pueden cambiar dinámicamente.
+* Direcciones IP dinámicas: Los servicios suelen desplegarse en contenedores o máquinas virtuales con direcciones IP que pueden cambiar dinámicamente.
 
-Escalabilidad: A medida que se añaden o eliminan instancias de servicios, la lista de direcciones IP cambia constantemente.
+* Escalabilidad: A medida que se añaden o eliminan instancias de servicios, la lista de direcciones IP cambia constantemente.
 
-Complejidad: Los servicios necesitan saber dónde y cómo encontrar otros servicios.
+* Complejidad: Los servicios necesitan saber dónde y cómo encontrar otros servicios.
 
 ✅ Solución con Eureka:
 
-Registro de Servicios: Cada microservicio se registra en el Eureka Server cuando se inicia.
+* Registro de Servicios: Cada microservicio se registra en el Eureka Server cuando se inicia.
 
-Descubrimiento de Servicios: Los microservicios pueden consultar a Eureka para obtener la dirección y el puerto de otros servicios.
+* Descubrimiento de Servicios: Los microservicios pueden consultar a Eureka para obtener la dirección y el puerto de otros servicios.
 
-Load Balancing: Eureka se integra con herramientas como Ribbon para distribuir las solicitudes entre múltiples instancias de un servicio.
+* Load Balancing: Eureka se integra con herramientas como Ribbon para distribuir las solicitudes entre múltiples instancias de un servicio.
 
 **🖥️ Ejemplo básico de Eureka Server en Spring Boot**
 
