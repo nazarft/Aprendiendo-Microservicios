@@ -147,7 +147,6 @@ Tanto RestTemplate como WebClient son herramientas para consumir APIs en aplicac
 ### Código con WebClient
 
 ```java
-
 @RestController
 @RequestMapping("/catalog")
 public class MovieCatalogController {
@@ -155,33 +154,37 @@ public class MovieCatalogController {
     private final WebClient.Builder webClientBuilder;
 
     @Autowired
-    public MovieCatalogController( WebClient.Builder webClientBuilder) {
+    public MovieCatalogController(WebClient.Builder webClientBuilder) {
         this.webClientBuilder = webClientBuilder;
     }
 
     @RequestMapping("/{userId}")
-    public List<CatalogItem> getCatalog(@PathVariable("userId") String userId) {
-
-        List<Rating> ratings = Arrays.asList(
-                new Rating("1234", 4),
-                new Rating("5678", 3)
-        );
-        return ratings.stream().map(rating -> {
-            /*Movie movie = restTemplate.getForObject("http://localhost:8081/movies/" + rating.getMovieId(), Movie.class);
-            return new CatalogItem(movie.getName(), "Desc", rating.getRating());*/
-            Movie movie = webClientBuilder.build()
+    public List<CatalogItem> getCatalog(@PathVariable("userId") String userId) throws Exception {
+            UserRating userRatings = webClientBuilder.build()
                     .get()
-                    .uri("http://localhost:8081/movies/" + rating.getMovieId())
+                    .uri("http://ratings-data-service/ratingsdata/user/" + userId)
                     .retrieve()
-                    .bodyToMono(Movie.class)
+                    .bodyToMono(UserRating.class)
                     .block();
-            return new CatalogItem(movie.getName(), "Desc", rating.getRating());
-        }).toList();
+            return userRatings
+                    .getRatings()
+                    .stream()
+                    .map(rating -> {
+                        Movie movie = webClientBuilder.build()
+                                        .get()
+                                        .uri("http://movie-info-service/movies/" + rating.getMovieId())
+                                        .retrieve()
+                                        .bodyToMono(Movie.class)
+                                        .block();
+                        
+                        return new CatalogItem(
+                                movie.getName(),
+                                movie.getDescription(),
+                                rating.getRating()
+                        );
+                    }).toList();
     }
-
-}
 ```
-
 Y la configuracion sería:
 
 ```java
@@ -194,6 +197,11 @@ public class WebClientConfiguration {
      }
 }
 ```
+### Nota
+*La aplicación hecha con WebClient se encuentra en la rama **feature/webClient***
+
+
+
 
 ## Segundo paso: Recuperar la información de Ratings
 
