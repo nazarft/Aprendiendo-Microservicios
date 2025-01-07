@@ -198,7 +198,7 @@ public class WebClientConfiguration {
 }
 ```
 ### Nota
-*La aplicación hecha con WebClient se encuentra en la rama **feature/webClient***
+*La aplicación hecha con WebClient se encuentra en la rama **feature/webClient**, a parte de usar WebClient se usa JPA y además se cambian anotaciones como UserRating a UserRatingDTO*
 
 
 
@@ -246,6 +246,8 @@ public class UserRating {
     }
 }
 ```
+Esto también podemos llamarlo DTO (Data Transfer Object), es decir un objeto cuya única finalidad es transportar información entre capas
+
 📝 Escenario con Rating sin UserRating:
 
 Si decides añadir datos del usuario (userId, userName) directamente en cada objeto Rating, tendrás que repetirlos en cada instancia.
