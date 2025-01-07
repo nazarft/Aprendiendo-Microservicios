@@ -166,7 +166,7 @@ public class RestTemplateConfiguration {
 
 * Inyección de dependencias: Facilita la inyección de la instancia usando @Autowired.
 
-👀 WebClient y el futuro de la programación reactiva
+👀 **WebClient y el futuro de la programación reactiva**
 
 Tanto RestTemplate como WebClient son herramientas para consumir APIs en aplicaciones Spring Boot, pero tienen diferencias clave en su diseño, uso y casos recomendados.
 
