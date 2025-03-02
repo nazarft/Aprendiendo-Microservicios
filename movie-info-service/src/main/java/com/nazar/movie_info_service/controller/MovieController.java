@@ -1,17 +1,18 @@
 package com.nazar.movie_info_service.controller;
 
 import com.nazar.movie_info_service.model.Movie;
+import com.nazar.movie_info_service.model.MovieInput;
 import com.nazar.movie_info_service.repository.MovieRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.graphql.data.method.annotation.Argument;
+import org.springframework.graphql.data.method.annotation.MutationMapping;
+import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.HashMap;
-import java.util.Map;
+
 
 @RestController
-@RequestMapping("/movies")
 public class MovieController {
 
     private final MovieRepository movieRepository;
@@ -19,16 +20,18 @@ public class MovieController {
     public MovieController(MovieRepository movieRepository) {
         this.movieRepository = movieRepository;
     }
-    
-   /* private final Map<String, Movie> movieData = new HashMap<>();
-    public MovieController() {
-        movieData.put("MOV101", new Movie("MOV101", "El Señor de los Anillos", "Un anillo para gobernarlos a todos"));
-        movieData.put("MOV102", new Movie("MOV102", "Interestelar", "Un grupo de astronautas busca un nuevo hogar para la humanidad"));
-        movieData.put("MOV201", new Movie("MOV201", "El Padrino", "La historia de la familia Corleone"));
-        movieData.put("MOV202", new Movie("MOV202", "Matrix", "La realidad no es lo que parece"));
-    }*/
-    @RequestMapping("/{movieId}")
-    public Movie getMovieInfo(@PathVariable("movieId") String movieId) {
+
+    @QueryMapping(name = "movieById")
+    public Movie getMovieInfo(@Argument String movieId) {
         return movieRepository.findById(movieId).orElse(new Movie(movieId, "Película desconocida", "Sin descripción"));
     }
+    @MutationMapping
+    public Movie addMovie(@Argument MovieInput movieInput){
+        Movie movie = new Movie();
+        movie.setMovieId(movieInput.getId());
+        movie.setName(movieInput.getName());
+        movie.setDescription(movieInput.getDescription());
+        return movieRepository.save(movie);
+    }
+
 }

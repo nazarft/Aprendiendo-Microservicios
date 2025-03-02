@@ -1,12 +1,11 @@
 package com.nazar.ratings_data_service.controller;
 
 import com.nazar.ratings_data_service.model.Rating;
+import com.nazar.ratings_data_service.model.RatingInput;
 import com.nazar.ratings_data_service.model.UserRatingDTO;
 import com.nazar.ratings_data_service.repository.RatingsDataRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -26,5 +25,13 @@ public class RatingDataServiceController {
         UserRatingDTO userRatingDTO = new UserRatingDTO();
         userRatingDTO.setRatings(ratings);
         return userRatingDTO;
+    }
+    @PostMapping("/add/{userId}")
+    public void addRating(@PathVariable("userId") String userId, @RequestBody RatingInput ratingInput) {
+        Rating rating = new Rating();
+        rating.setUserId(userId);
+        rating.setMovieId(ratingInput.getMovieId());
+        rating.setRating(ratingInput.getRating());
+        ratingsDataRepository.save(rating);
     }
 }

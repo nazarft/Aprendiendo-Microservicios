@@ -1,5 +1,6 @@
 package com.nazar.movie_catalog_service.controller;
 
+import com.nazar.movie_catalog_service.controller.graphql.MovieGraphQLResponse;
 import com.nazar.movie_catalog_service.model.CatalogItem;
 import com.nazar.movie_catalog_service.model.Movie;
 import com.nazar.movie_catalog_service.model.UserRating;
@@ -9,7 +10,10 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.reactive.function.client.WebClient;
+
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/catalog")
@@ -35,12 +39,21 @@ public class MovieCatalogController {
                     .getRatings()
                     .stream()
                     .map(rating -> {
-                        Movie movie = webClientBuilder.build()
-                                        .get()
-                                        .uri("http://movie-info-service/movies/" + rating.getMovieId())
-                                        .retrieve()
-                                        .bodyToMono(Movie.class)
-                                        .block();
+                        // Construir la consulta GraphQL
+                        String graphQLQuery = "{ \"query\": \"{ movieById(movieId: \\\""
+                                + rating.getMovieId() + "\\\") { movieId name description } }\" }";
+                        // Realizar la llamada POST al endpoint de GraphQL de movie-info-service
+
+                        MovieGraphQLResponse response = webClientBuilder.build()
+                                .post()
+                                .uri("http://movie-info-service/graphql")
+                                .header("Content-Type", "application/json")
+                                .header("Accept", "application/json")
+                                .bodyValue(graphQLQuery)
+                                .retrieve()
+                                .bodyToMono(MovieGraphQLResponse.class)
+                                .block();
+                        Movie movie = response.getData().getMovieById();
 
                         return new CatalogItem(
                                 movie.getName(),
